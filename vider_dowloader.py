@@ -1,26 +1,28 @@
-import pytube
+from pytube import YouTube
 
-# ask for YouTube URL and desired quality
-url = input("Enter YouTube URL: ")
-quality = input(
-    "Enter desired quality (or press Enter for highest available quality): "
-)
 
-# create YouTube object
-yt = pytube.YouTube(url)
+def download_video(url, quality, destination):
+    try:
+        yt = YouTube(url)
+        if quality.lower() == "highest":
+            stream = yt.streams.get_highest_resolution()
+        elif quality.lower() == "lowest":
+            stream = yt.streams.get_lowest_resolution()
+        elif quality.lower() == "audio":
+            stream = yt.streams.filter(only_audio=True).first()
 
-# create list of available itags
-itag_list = []
-for stream in yt.streams:
-    itag_list.append(stream.itag)
-print(itag_list)
+        if stream:
+            stream.download(output_path=destination)
+            print("Video downloaded successfully.")
+        else:
+            print("No matching stream found.")
+    except Exception as e:
+        print("Error:", e)
 
-# choose stream with desired quality
-if quality:
-    stream = yt.streams.filter(res=quality).first()
-else:
-    stream = yt.streams.get_highest_resolution()
 
-# download stream
-stream.download()
-print("Video downloaded successfully!")
+if __name__ == "__main__":
+    url = input("Enter the YouTube video URL: ")
+    quality = input("Enter the desired quality (highest, lowest, audio): ")
+    destination = input("Enter the destination directory: ")
+
+    download_video(url, quality, destination)
